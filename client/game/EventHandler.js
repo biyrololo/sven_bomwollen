@@ -15,6 +15,7 @@ class EventHandler {
      */
     constructor (props){
         this.player = props.player;
+        this.player.$origin = true;
         this.players = [this.player];
         this.sheeps = [];
         this.man = props.man;

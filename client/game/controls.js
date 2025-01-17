@@ -75,54 +75,37 @@ function get_controls(Player, socket){
 
     const controls = new Controls();
 
-    const mode_delta = (delta) => {
-        const player_pos = Player._map.mapMap.position_of(Player);
-            const target_pos = {
-                x: player_pos.x + delta.x,
-                y: player_pos.y + delta.y
+    const move_dir = (dir) => {
+        Player.global_target = null;
+        socket.send(JSON.stringify({
+            event: "move_player",
+            payload: {
+                direction: dir
             }
-
-            const path = find_shortest_path(player_pos, target_pos, Player._map.mapMap, Player);
-            if(path.length > 0){
-                const dir = get_direction(
-                    Player._map.get_posiiton(path[0].x, path[0].y).x,
-                    Player._map.get_posiiton(path[0].x, path[0].y).y,
-                    Player.position_x,
-                    Player.position_y
-                )
-
-                Player.global_target = target_pos;
-
-                socket.send(JSON.stringify({
-                    event: "move_player",
-                    payload: {
-                        direction: dir
-                    }
-                }));
-            }
+        }));
     }
 
     controls.addKey("ArrowUp", {
         down: () => {
-            mode_delta({x: 0, y: -2});
+            move_dir("UP_LEFT");
         },
     });
 
     controls.addKey("ArrowDown", {
         down: () => {
-            mode_delta({x: 0, y: 2});
+            move_dir("DOWN_RIGHT");
         },
     });
 
     controls.addKey("ArrowLeft", {
         down: () => {
-            mode_delta({x: -1, y: 0});
+            move_dir("DOWN_LEFT");
         },
     });
 
     controls.addKey("ArrowRight", {
         down: () => {
-            mode_delta({x: 1, y: 0});
+            move_dir("UP_RIGHT");
         },
     });
 
@@ -130,6 +113,7 @@ function get_controls(Player, socket){
         down: () => {
             // check if sheep is nearby
             const player_pos = Player._map.mapMap.position_of(Player);
+            if(!player_pos) return;
             let sheep = null;
             let sheep_pos = null;
             for(let dir of get_directions_map(player_pos.x, player_pos.y)){
@@ -155,6 +139,7 @@ function get_controls(Player, socket){
     });
 
     const handle_click = (e) => {
+        if(!Player._map.mapMap.position_of(Player)) return;
         let { clientX, clientY } = e;
         let _x = ((clientX / Player._map.global_scale) - Player._map.block_size / 4 + (Player._map.camera.position.x)) / (Player._map.block_size / 2);
         let _y = ((clientY / Player._map.global_scale) - Player._map.block_size / 4 + (Player._map.camera.position.y)) / (Player._map.block_size / 2);

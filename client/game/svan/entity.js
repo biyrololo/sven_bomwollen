@@ -19,6 +19,8 @@ function generate(props, socket){
     entity.global_target = null;
     entity.addAnimationController(get_animation_controller());
     entity.addEventListener('target_reached', e => {
+        return;
+        
         if(entity.global_target){
             if(entity._map.mapMap.position_of(entity).compare(entity.global_target)){
                 entity.global_target = null;

@@ -8,6 +8,7 @@
     "build": "webpack"
   },
   "keywords": [],
+  "type": "module",
   "author": "",
   "license": "ISC",
   "description": "",
