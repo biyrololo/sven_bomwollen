@@ -125,6 +125,28 @@ export default class Game {
         this.players.forEach(p => p.ws.send(JSON.stringify(data)));
     }
 
+    stopSatisfyingByTime(sheep){
+        let player = sheep.satifying_by;
+        player.satisfying_sheep = null;
+        sheep.satifying_by = null;
+        sheep.is_satisfying = false;
+        this.broadcast({
+            event: 'stop_satisfying',
+            payload: {
+                sheep: {
+                    x: sheep.position.x,
+                    y: sheep.position.y,
+                    id: sheep.id
+                },
+                player: {
+                    x: player.position.x,
+                    y: player.position.y,
+                    id: player.id
+                }
+            }
+        })
+    }
+
     handle_message(data, entity, ws){
         console.log('received', data, 'from', entity.id);
         const player_id = entity.id;
@@ -150,6 +172,10 @@ export default class Game {
             }
             const new_x = entity.position.x + delta[0];
             const new_y = entity.position.y + delta[1];
+            if(new_x < 0 || new_x >= this.map.sizes.width || new_y < 0 || new_y >= this.map.sizes.height){
+                ws.send(JSON.stringify({error: 'invalid_move'}));
+                return;
+            }
             // console.log({new_x, new_y});
             // console.log(this.map.get(new_x, new_y));
             if(this.map.has(new_x, new_y) && this.map.get(new_x, new_y).name !== 'teleport'){
@@ -389,6 +415,9 @@ export default class Game {
     }
 
     stopUpdating(){
+        this.dog.stop_all();
+        this.oldman.stop_all();
+        this.players.splice(this.players.length);
         clearInterval(this.intervalId);
     }
 

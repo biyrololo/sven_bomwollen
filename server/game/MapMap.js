@@ -14,6 +14,9 @@ class MapMap {
     }
 
     get(x, y){
+        if(x < 0 || y < 0 || x >= this.$map[0].length || y >= this.$map.length){
+            return null;
+        }
         return this.$map[y][x];
     }
 

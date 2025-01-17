@@ -208,4 +208,9 @@ export default class Dog extends Entity {
     start(){
         this.waiting();
     }
+
+    stop_all(){
+        clearTimeout(this.moveTimeout);
+        clearTimeout(this.waitTimeout);
+    }
 }

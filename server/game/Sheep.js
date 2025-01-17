@@ -7,7 +7,7 @@ export default class Sheep extends Entity{
         this.satisfy_level = 0;
         this.max_satisfy_level = 5;
         this.current_satisfy_level = 2;
-        this.satisty_speed = 1;
+        this.satisty_speed = 0.5;
         this.is_satisfying = false;
         this.angry_level = 0;
         this.max_angry_level = 5;
@@ -23,13 +23,15 @@ export default class Sheep extends Entity{
 
     satisfy(){
         this.satifying_timeout = setTimeout(()=>{
-            this.current_satisfy_level--;
+            this.current_satisfy_level-=this.satisty_speed;
             // console.log('satisfy level', this.current_satisfy_level);
             if(this.current_satisfy_level === 0){
                 this.completeSatisfying();
                 return;
+            } else {
+                this.game.stopSatisfyingByTime(this);
             }
-            this.satisfy();
+            // this.satisfy();
         }, this.satisty_speed * 1000)
     }
 

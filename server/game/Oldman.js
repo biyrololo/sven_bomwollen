@@ -199,4 +199,9 @@ export default class Oldman extends Entity {
     start(){
         this.waiting();
     }
+
+    stop_all(){
+        clearTimeout(this.moveTimeout);
+        clearTimeout(this.waitTimeout);
+    }
 }
