@@ -23,9 +23,10 @@ export default class Sheep extends Entity{
 
     satisfy(){
         this.satifying_timeout = setTimeout(()=>{
-            this.current_satisfy_level-=this.satisty_speed;
+            const k = this.satisfying_by?.speed_bonus ? 2 : 1;
+            this.current_satisfy_level-=this.satisty_speed * k;
             // console.log('satisfy level', this.current_satisfy_level);
-            if(this.current_satisfy_level === 0){
+            if(this.current_satisfy_level <= 0){
                 this.completeSatisfying();
                 return;
             } else {

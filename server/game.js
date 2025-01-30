@@ -5,6 +5,8 @@ import MapMap from "./game/MapMap.js";
 import Oldman from "./game/Oldman.js";
 import Sheep from "./game/Sheep.js";
 import { winter_map } from "./maps/winter.js";
+import { SpeedBonus, DogBonus, OldmanBonus } from './game/Bonus.js';
+const bonuses = [SpeedBonus, DogBonus, OldmanBonus];
 
 let last_id = 0;
 export default class Game {
@@ -14,6 +16,7 @@ export default class Game {
         this.players = [];
         this.entites = [];
         this.sheeps = [];
+        this.bonus = null;
         this.oldman = null;
         this.dog = null;
         this.intervalId = null;
@@ -126,9 +129,9 @@ export default class Game {
     }
 
     stopSatisfyingByTime(sheep){
-        let player = sheep.satifying_by;
+        let player = sheep.satisfying_by;
         player.satisfying_sheep = null;
-        sheep.satifying_by = null;
+        sheep.satisfying_by = null;
         sheep.is_satisfying = false;
         this.broadcast({
             event: 'stop_satisfying',
@@ -244,7 +247,7 @@ export default class Game {
             }
             entity.satisfying_sheep = sheep;
             sheep.is_satisfying = true;
-            sheep.satifying_by = entity;
+            sheep.satisfying_by = entity;
             this.dog.start_follow_player(entity);
             this.oldman.start_follow_player(entity);
             this.broadcast({
@@ -267,7 +270,7 @@ export default class Game {
     }
 
     completeSatisfying(sheep){
-        let player = sheep.satifying_by;
+        let player = sheep.satisfying_by;
         this.broadcast({
             event: 'complete_satisfying',
             payload: {
@@ -306,7 +309,7 @@ export default class Game {
     }
 
     stopSatisfying(sheep){
-        let player = sheep.satifying_by;
+        let player = sheep.satisfying_by;
         this.broadcast({
             event: 'stop_satisfying',
             payload: {
@@ -329,6 +332,7 @@ export default class Game {
         if(player.satisfying_sheep !== null){
             player.satisfying_sheep.stopSatisfying();
         }
+        player.healths--;
         this.broadcast({
             event: 'fight',
             payload: {
@@ -346,34 +350,54 @@ export default class Game {
             }
         })
         setTimeout(() => {
-            if(this.dog.target.active && this.dog.target.abs_target === player){
-                this.dog.stop_follow_player();
-            }
-            if(this.oldman.target.active && this.oldman.target.abs_target === player){
-                this.oldman.stop_follow_player();
-            }
-            this.broadcast({
-                event: 'loose_game',
-                payload: {
-                    player: {
-                        x: player.position.x,
-                        y: player.position.y,
-                        id: player.id
-                    },
-                    caught_by: {
-                        x: caught_by.position.x,
-                        y: caught_by.position.y,
-                        id: caught_by.id,
-                        name: caught_by.name
-                    }
+            if(player.healths === 0){
+                if(this.dog.target.active && this.dog.target.abs_target === player){
+                    this.dog.stop_follow_player();
                 }
-            })
-            this.delete_game(this);
+                if(this.oldman.target.active && this.oldman.target.abs_target === player){
+                    this.oldman.stop_follow_player();
+                }
+                this.broadcast({
+                    event: 'loose_game',
+                    payload: {
+                        player: {
+                            x: player.position.x,
+                            y: player.position.y,
+                            id: player.id
+                        },
+                        caught_by: {
+                            x: caught_by.position.x,
+                            y: caught_by.position.y,
+                            id: caught_by.id,
+                            name: caught_by.name
+                        }
+                    }
+                })
+                this.delete_game(this);
+                this.stopUpdating();
+            } else {
+                this.broadcast({
+                    event: 'fight_end',
+                    payload: {
+                        player: {
+                            x: player.position.x,
+                            y: player.position.y,
+                            id: player.id
+                        },
+                        caught_by: {
+                            x: caught_by.position.x,
+                            y: caught_by.position.y,
+                            id: caught_by.id,
+                            name: caught_by.name
+                        }
+                    }
+                })
+                this.teleportPlayer(player, player.position, true);
+            }
         }, this.fight_time * 1000)
-        this.stopUpdating();
     }
 
-    teleportPlayer(player, from_pos){
+    teleportPlayer(player, from_pos, spawn=false){
         // console.log('teleport player', player.id);
         const pos = this.map.get_free();
         // console.log(pos);
@@ -386,7 +410,7 @@ export default class Game {
                 this.oldman.stop_follow_player();
             }
             this.broadcast({
-                event: 'player_teleport',
+                event: spawn ? 'player_spawn' : `player_teleport`,
                 payload: {
                     player: {
                         x: pos.x,
@@ -409,9 +433,55 @@ export default class Game {
 
     startUpdating(){
         this.entites.forEach(e => e.start());
+        this.create_random_bonus();
         this.intervalId = setInterval(() => {
             this.update();
         }, 1000 / 2);
+    }
+
+    create_random_bonus(){
+        const bonus = bonuses[Math.floor(Math.random() * bonuses.length)];
+        const free_pos = this.map.get_free();
+        if(!free_pos) return;
+        this.bonus = bonus(free_pos);
+        this.broadcast({
+            event: 'bonus_appear',
+            payload: this.bonus.json()
+        })
+        this.bonus.outer_timeout = setTimeout(() => {
+            this.broadcast({
+                event: 'bonus_disappear',
+                payload: this.bonus.json()
+            })
+            this.bonus = null;
+            setTimeout(() => {
+                this.create_random_bonus();
+            }, 5000);
+        }, 5000);
+    }
+
+    takeBonus(player){
+        this.broadcast({
+            event: 'take_bonus',
+            payload: {
+                player: {
+                    x: player.position.x,
+                    y: player.position.y,
+                    id: player.id
+                },
+                bonus: this.bonus.json()
+            }
+        })
+        clearTimeout(this.bonus.outer_timeout);
+        this.bonus.take(player);
+        const callback = this.bonus.onTimeout;
+        setTimeout(() => {
+            callback(player);
+        }, this.bonus.time * 1000);
+        this.bonus = null;
+        setTimeout(() => {
+            this.create_random_bonus();
+        }, 5000);
     }
 
     stopUpdating(){
@@ -427,7 +497,8 @@ export default class Game {
             sheeps: this.sheeps.map(s => s.json()),
             oldman: this.oldman.json(),
             dog: this.dog.json(),
-            map: this.map.json()
+            map: this.map.json(),
+            bonus: this.bonus === null ? null : this.bonus.json()
         }
     }
 
