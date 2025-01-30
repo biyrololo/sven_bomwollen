@@ -75,6 +75,8 @@ function get_controls(Player, socket){
 
     const controls = new Controls();
 
+    let interval = null;
+
     const move_dir = (dir) => {
         Player.global_target = null;
         socket.send(JSON.stringify({
@@ -139,7 +141,9 @@ function get_controls(Player, socket){
     });
 
     const handle_click = (e) => {
+        console.log(3)
         if(!Player._map.mapMap.position_of(Player)) return;
+        console.log(4)
         let { clientX, clientY } = e;
         let _x = ((clientX / Player._map.global_scale) - Player._map.block_size / 4 + (Player._map.camera.position.x)) / (Player._map.block_size / 2);
         let _y = ((clientY / Player._map.global_scale) - Player._map.block_size / 4 + (Player._map.camera.position.y)) / (Player._map.block_size / 2);
@@ -257,12 +261,28 @@ function get_controls(Player, socket){
     }
 
     window.addEventListener('mousedown', (e) => {
-        handle_click(e);
+        interval = setInterval(() => {
+            console.log(1)
+            if(Player.target.active) return;
+            console.log(2)
+            handle_click(e);
+        }, 10);
+    })
+
+    window.addEventListener('mouseup', () => {
+        clearInterval(interval);
     })
 
     window.addEventListener('touchstart', (e) => {
         const touch = e.touches[0];
-        handle_click({clientX: touch.clientX, clientY: touch.clientY});
+        interval = setInterval(() => {
+            if(Player.target.active) return;
+            handle_click({clientX: touch.clientX, clientY: touch.clientY});
+        }, 10);
+    })
+
+    window.addEventListener('touchend', () => {
+        clearInterval(interval);
     })
 
     return controls;

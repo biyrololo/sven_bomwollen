@@ -7,6 +7,9 @@ import { MyGameEntity } from "./MyGameEntity.js";
 import { get_direction } from "./controls.js";
 import { SPEED_K } from "./constants.js";
 import generate_fight from "./fight/index.js";
+import { generateSpeedBonus } from "./boosts/speedBonus.js";
+import { generateDogBonus } from "./boosts/dogBonus.js";
+import { generateOldmanBonus } from "./boosts/oldmanBonus.js";
 
 class EventHandler {
     /**
@@ -18,6 +21,7 @@ class EventHandler {
         this.player.$origin = true;
         this.players = [this.player];
         this.sheeps = [];
+        this.bonus = null;
         this.man = props.man;
         this.dog = props.dog;
         this.map = props.map;
@@ -116,8 +120,70 @@ class EventHandler {
                         }
                     }
                 }
+
+                const bonus = payload.bonus
+                if(bonus){
+                    const name = bonus.name;
+                    const pos = this.map.get_posiiton(bonus.position.x, bonus.position.y);
+                    if(name === 'speed'){
+                        this.bonus = generateSpeedBonus({
+                            context: this.player.context,
+                            position: pos
+                        })
+                    }
+                    if(name === 'dog'){
+                        this.bonus = generateDogBonus({
+                            context: this.player.context,
+                            position: pos
+                        })
+                    }
+                    if(name === 'oldman'){
+                        this.bonus = generateOldmanBonus({
+                            context: this.player.context,
+                            position: pos
+                        })
+                    }
+                    this.map.addEntityToCurrentLevel(this.bonus);
+                }
                 
                 break;
+
+            case "bonus_appear":{
+                const name = payload.name;
+                const pos = this.map.get_posiiton(payload.position.x, payload.position.y);
+                if(name === 'speed'){
+                    this.bonus = generateSpeedBonus({
+                        context: this.player.context,
+                        position: pos
+                    })
+                }
+                if(name === 'dog'){
+                    this.bonus = generateDogBonus({
+                        context: this.player.context,
+                        position: pos
+                    })
+                }
+                if(name === 'oldman'){
+                    this.bonus = generateOldmanBonus({
+                        context: this.player.context,
+                        position: pos
+                    })
+                }
+                this.map.addEntityToCurrentLevel(this.bonus);
+                break;
+            }
+
+            case "bonus_disappear":
+            case "take_bonus":{
+                this.map.removeEntityFromCurrentLevel(this.bonus);
+                break;
+            }
+
+            case "change_speed":{
+                const p = this.players.find(p => p._id === payload.player.id);
+                p.speed = SPEED_K * payload.player.speed;
+                break;
+            }
 
             case "dog_move":{
                 let new_pos = this.map.get_posiiton(payload.new_pos.x, payload.new_pos.y);
@@ -224,6 +290,17 @@ class EventHandler {
                 break;
             }
 
+            case "fight_end": {
+                let id = payload.player.id;
+                let pl = this.players.find(p => p._id === id);
+                let index = this.players.indexOf(pl);
+                let fight = this.fights[index];
+                fight.is_hidden = true;
+                fight.position_x = -1000;
+                fight.position_y = -1000;
+                break;
+            }
+
             case "loose_game": {
                 let id = payload.player.id;
                 alert(`PLAYER ${id} LOOSE`)
@@ -236,6 +313,18 @@ class EventHandler {
                 break;
             }
 
+            case "player_spawn": {
+                let id = payload.player.id;
+                let pl = this.players.find(p => p._id === id);
+                let {x, y} = payload.player;
+                let new_pos = this.map.get_posiiton(x, y);
+                this.map.mapMap.add(x, y, pl);
+                pl.position_x = new_pos.x;
+                pl.position_y = new_pos.y;
+                pl.animation_controller.setAnimationByName('idle');
+                pl.target.active = false;
+                break;
+            }
             case "player_teleport": {
                 let id = payload.player.id;
                 let pl = this.players.find(p => p._id === id);

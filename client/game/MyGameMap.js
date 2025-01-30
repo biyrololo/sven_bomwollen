@@ -24,6 +24,7 @@ class MyGameMap extends GameMap{
     removeEntityFromCurrentLevel(entity){
         this.current_level.removeEntity(entity);
         let pos = this.mapMap.position_of(entity);
+        if(!pos) return;
         this.mapMap.remove(pos.x, pos.y);
     }
     
