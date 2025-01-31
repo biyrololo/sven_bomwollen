@@ -39,6 +39,16 @@ class MapMap {
         this.$map[y][x] = null;
     }
 
+    remove_item(value){
+        for(let y = 0; y < this.$map.length; y++){
+            for(let x = 0; x < this.$map[y].length; x++){
+                if(this.$map[y][x]?._id === value._id){
+                    this.$map[y][x] = null;
+                }
+            }
+        }
+    }
+
     move(x1, y1, x2, y2){
         const value = this.$map[y1][x1];
         this.$map[y1] = this.$map[y1].map((_, i) => i === x1 ? null : this.$map[y1][i]);

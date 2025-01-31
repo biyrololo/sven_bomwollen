@@ -231,7 +231,9 @@ class EventHandler {
                 console.warn(new_pos, payload.new_pos, pl._position);
                 const dir = get_direction(new_pos.x, new_pos.y, pl.position_x, pl.position_y);
                 console.warn(dir);
-                this.map.mapMap.move(payload.old_pos.x, payload.old_pos.y, payload.new_pos.x, payload.new_pos.y);
+                // this.map.mapMap.move(payload.old_pos.x, payload.old_pos.y, payload.new_pos.x, payload.new_pos.y);
+                this.map.mapMap.remove_item(pl);
+                this.map.mapMap.add(payload.new_pos.x, payload.new_pos.y, pl);
                 pl.setTarget(
                     {
                         x: new_pos.x,
@@ -318,6 +320,7 @@ class EventHandler {
                 let pl = this.players.find(p => p._id === id);
                 let {x, y} = payload.player;
                 let new_pos = this.map.get_posiiton(x, y);
+                this.map.mapMap.remove_item(pl);
                 this.map.mapMap.add(x, y, pl);
                 pl.position_x = new_pos.x;
                 pl.position_y = new_pos.y;
@@ -333,7 +336,8 @@ class EventHandler {
                 console.log(this.map.mapMap.get(old_x, old_y));
                 let {x, y} = payload.player;
                 let new_pos = this.map.get_posiiton(x, y);
-                this.map.mapMap.move(old_x, old_y, x, y);
+                this.map.mapMap.remove_item(pl);
+                this.map.mapMap.add(x, y, pl);
                 pl.position_x = new_pos.x;
                 pl.position_y = new_pos.y;
                 pl.animation_controller.setAnimationByName('idle');

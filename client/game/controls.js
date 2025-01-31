@@ -89,26 +89,50 @@ function get_controls(Player, socket){
 
     controls.addKey("ArrowUp", {
         down: () => {
-            move_dir("UP_LEFT");
+            clearInterval(interval);
+            interval = setInterval(() => {
+                move_dir("UP_LEFT");
+            }, 10)
         },
+        up: () => {
+            clearInterval(interval);
+        }
     });
 
     controls.addKey("ArrowDown", {
         down: () => {
-            move_dir("DOWN_RIGHT");
+            clearInterval(interval);
+            interval = setInterval(() => {
+                move_dir("DOWN_RIGHT");
+            }, 10)
         },
+        up: () => {
+            clearInterval(interval);
+        }
     });
 
     controls.addKey("ArrowLeft", {
         down: () => {
-            move_dir("DOWN_LEFT");
+            clearInterval(interval);
+            interval = setInterval(() => {
+                move_dir("DOWN_LEFT");
+            }, 10)
         },
+        up: () => {
+            clearInterval(interval);
+        }
     });
 
     controls.addKey("ArrowRight", {
         down: () => {
-            move_dir("UP_RIGHT");
+            clearInterval(interval);
+            interval = setInterval(() => {
+                move_dir("UP_RIGHT");
+            }, 10)
         },
+        up: () => {
+            clearInterval(interval);
+        }
     });
 
     controls.addKey("Space", {
@@ -261,6 +285,7 @@ function get_controls(Player, socket){
     }
 
     window.addEventListener('mousedown', (e) => {
+        clearInterval(interval);
         interval = setInterval(() => {
             console.log(1)
             if(Player.target.active) return;
@@ -274,6 +299,7 @@ function get_controls(Player, socket){
     })
 
     window.addEventListener('touchstart', (e) => {
+        clearInterval(interval);
         const touch = e.touches[0];
         interval = setInterval(() => {
             if(Player.target.active) return;
