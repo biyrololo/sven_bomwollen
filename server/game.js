@@ -457,7 +457,7 @@ export default class Game {
             setTimeout(() => {
                 this.create_random_bonus();
             }, 5000);
-        }, 5000);
+        }, 15000);
     }
 
     takeBonus(player){

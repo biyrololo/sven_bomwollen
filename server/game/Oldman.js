@@ -139,6 +139,9 @@ export default class Oldman extends Entity {
     }
 
     start_follow_player(player){
+        if(this.sleeping){
+            return;
+        }
         this.state = STATES.follow;
         this.target.abs_target = player;
         this.target.active = true;
@@ -203,5 +206,7 @@ export default class Oldman extends Entity {
     stop_all(){
         clearTimeout(this.moveTimeout);
         clearTimeout(this.waitTimeout);
+        this.state = STATES.idle;
+        this.target.active = false;
     }
 }

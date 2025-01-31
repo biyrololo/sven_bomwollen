@@ -63,9 +63,13 @@ export const SpeedBonus = (pos)=>(
 export const DogBonus = (pos)=>(
     new Bouns(pos, 'dog', (player) => {
         const dog = player.game.dog;
+        dog.sleeping = true;
         dog.stop_all();
+        console.log('dog sleep');
     }, (player) => {
+        console.log('dog wake up');
         const dog = player.game.dog;
+        dog.sleeping = false;
         dog.start();
     }, 20)
 )
@@ -73,9 +77,11 @@ export const DogBonus = (pos)=>(
 export const OldmanBonus = (pos)=>(
     new Bouns(pos, 'oldman', (player) => {
         const oldman = player.game.oldman;
+        oldman.sleeping = true;
         oldman.stop_all();
     }, (player) => {
         const oldman = player.game.oldman;
+        oldman.sleeping = false;
         oldman.start();
     }, 20)
 )

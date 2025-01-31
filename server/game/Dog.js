@@ -12,7 +12,7 @@ const STAY_TIME_MOVE = 5;
 
 export default class Dog extends Entity {
     constructor(position) {
-        super('dog', position, 2);
+        super('dog', position, 1);
         this.state = STATES.idle;
         this.stay_time = 0;
         this.moveTimeout = null;
@@ -147,6 +147,7 @@ export default class Dog extends Entity {
     }
 
     start_follow_player(player){
+        if(this.sleeping) return;
         this.state = STATES.follow;
         this.target.abs_target = player;
         this.target.active = true;
@@ -212,5 +213,7 @@ export default class Dog extends Entity {
     stop_all(){
         clearTimeout(this.moveTimeout);
         clearTimeout(this.waitTimeout);
+        this.state = STATES.idle;
+        this.target.active = false;
     }
 }
