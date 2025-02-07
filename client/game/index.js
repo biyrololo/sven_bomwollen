@@ -1,4 +1,3 @@
-import { GameMap, Controls } from "../Canvas2DEngine/index.js";
 import { test_level } from "./levels.js";
 import camera from "./camera.js";
 import { generate as generatePlayer } from "./svan/index.js";
@@ -84,6 +83,10 @@ function start(){
         // console.log(JSON.parse(data.data))
         handler.handle(d);
     }
+
+    game_map.player = Player;
+    game_map.set_ui();
+    game_map.socket = socket;
     
     roomListSocket.onmessage = function(data){
         console.log(JSON.parse(data.data));

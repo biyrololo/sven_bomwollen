@@ -19,6 +19,7 @@ class MyGameEntity extends GameEntity {
             },
             active: false
         }
+        this._health = 3;
         this.movable = true;
         this.is_hidden = false;
     }

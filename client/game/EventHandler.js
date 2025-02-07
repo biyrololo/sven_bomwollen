@@ -10,6 +10,7 @@ import generate_fight from "./fight/index.js";
 import { generateSpeedBonus } from "./boosts/speedBonus.js";
 import { generateDogBonus } from "./boosts/dogBonus.js";
 import { generateOldmanBonus } from "./boosts/oldmanBonus.js";
+import { generateToken } from "./token.js";
 
 class EventHandler {
     /**
@@ -22,6 +23,7 @@ class EventHandler {
         this.players = [this.player];
         this.sheeps = [];
         this.bonus = null;
+        this.tokens = [];
         this.man = props.man;
         this.dog = props.dog;
         this.map = props.map;
@@ -32,6 +34,12 @@ class EventHandler {
         const payload = event.payload;
         // console.log(event);
         switch (event.event) {
+            case "time":{
+                const new_time = payload.time;
+                this.map.game_time = new_time;
+                break;
+            }
+
             case "connected":
                 this.player._id = payload.player_id;
                 break;
@@ -147,6 +155,25 @@ class EventHandler {
                 }
                 
                 break;
+
+            // case "spawn_token":{
+            //     const pos = this.map.get_posiiton(payload.token.x, payload.token.y);
+            //     const token = generateToken({
+            //         context: this.player.context,
+            //         position: pos
+            //     })
+            //     token._id = payload.token.id;
+            //     this.tokens.push(token);
+            //     this.map.addEntityToCurrentLevel(token);
+            //     break;
+            // }
+
+            // case "take_token":{
+            //     const {id} = payload.token;
+            //     this.map.removeEntityFromCurrentLevel(this.tokens.find(t => t._id === id));
+            //     this.tokens = this.tokens.filter(t => t._id !== id);
+            //     break;
+            // }
 
             case "bonus_appear":{
                 const name = payload.name;
@@ -295,6 +322,8 @@ class EventHandler {
             case "fight_end": {
                 let id = payload.player.id;
                 let pl = this.players.find(p => p._id === id);
+                let healths = payload.player.healths;
+                pl._health = healths;
                 let index = this.players.indexOf(pl);
                 let fight = this.fights[index];
                 fight.is_hidden = true;
