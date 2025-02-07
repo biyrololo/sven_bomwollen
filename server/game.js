@@ -6,6 +6,7 @@ import Oldman from "./game/Oldman.js";
 import Sheep from "./game/Sheep.js";
 import { winter_map } from "./maps/winter.js";
 import { SpeedBonus, DogBonus, OldmanBonus } from './game/Bonus.js';
+import Token from "./game/Token.js";
 const bonuses = [SpeedBonus, DogBonus, OldmanBonus];
 
 let last_id = 0;
@@ -16,11 +17,14 @@ export default class Game {
         this.players = [];
         this.entites = [];
         this.sheeps = [];
+        this.tokens = [];
         this.bonus = null;
         this.oldman = null;
         this.dog = null;
         this.intervalId = null;
+        this.timeIntervalId = null;
         this.map = new MapMap({width: 14, height: 13});
+        this.time = 180;
         load(winter_map, this.map);
         // console.table(this.map.json().map);
         for(let i = 0; i < 10; i++){
@@ -151,11 +155,19 @@ export default class Game {
     }
 
     handle_message(data, entity, ws){
+        if(entity.autoplay){
+            return;
+        }
         console.log('received', data, 'from', entity.id);
         const player_id = entity.id;
         if(!('event' in data)){
             ws.send(JSON.stringify({error: 'unknown_data'}));
             return;
+        }
+
+        if(data.event === 'autoplay'){
+            console.log('making autoplay', entity.id);
+            this.makeAutoplay(entity);
         }
 
         if(data.event === 'move_player'){
@@ -289,13 +301,59 @@ export default class Game {
         sheep.destroy();
         player.satisfying_sheep = null;
         player.score++;
+        const pos = this.map.get_free();
+        if(pos){
+            let token = new Token(pos, 'coin', (player) => {
+                this.takeToken(player, token);
+            })
+            this.tokens.push(token);
+            this.broadcast({
+                event: 'spawn_token',
+                payload: {
+                    token: {
+                        x: token.position.x,
+                        y: token.position.y,
+                        id: token.id
+                    }
+                }
+            })
+        }
         if(this.sheeps.length === 0){
             this.endGame();
         }
     }
 
+    takeToken(player, token){
+        this.tokens = this.tokens.filter(t => t.id !== token.id);
+        this.broadcast({
+            event: 'take_token',
+            payload: {
+                player: {
+                    x: player.position.x,
+                    y: player.position.y,
+                    id: player.id
+                },
+                token: {
+                    x: token.position.x,
+                    y: token.position.y,
+                    id: token.id
+                }
+            }
+        })
+    }
+
     endGame(){
-        let win_player = this.players.sort((a, b) => b.entity.score - a.entity.score)[0].entity;
+        let win_player = this.players.sort((a, b) => b.entity.score - a.entity.score)[0]?.entity;
+        if(!win_player){
+            this.broadcast({
+                event: 'INTERNAL_ERROR',
+                payload: {
+                    error: 'no winner'
+                }
+            })
+            console.error('no winner');
+            return;
+        }
         this.broadcast({
             event: 'win_game',
             payload: {
@@ -382,7 +440,8 @@ export default class Game {
                         player: {
                             x: player.position.x,
                             y: player.position.y,
-                            id: player.id
+                            id: player.id,
+                            healths: player.healths 
                         },
                         caught_by: {
                             x: caught_by.position.x,
@@ -437,6 +496,26 @@ export default class Game {
         this.intervalId = setInterval(() => {
             this.update();
         }, 1000 / 2);
+        this.timeIntervalId = setInterval(() => {
+            this.broadcastTime();
+        }, 1000);
+    }
+
+    broadcastTime(){
+        if(this.time === 0){
+            this.broadcast({
+                event: 'timeout'
+            })
+            this.endGame();
+            return;
+        }
+        this.broadcast({
+            event: 'time',
+            payload: {
+                time: this.time
+            }
+        })
+        this.time--;
     }
 
     create_random_bonus(){
@@ -489,6 +568,11 @@ export default class Game {
         this.oldman.stop_all();
         this.players.splice(this.players.length);
         clearInterval(this.intervalId);
+        clearInterval(this.timeIntervalId);
+    }
+
+    makeAutoplay(player){
+        player.startAutoplay();
     }
 
     json(){
