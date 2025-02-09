@@ -285,6 +285,7 @@ function get_controls(Player, socket){
     }
 
     window.addEventListener('mousedown', (e) => {
+        console.log(0)
         clearInterval(interval);
         interval = setInterval(() => {
             console.log(1)

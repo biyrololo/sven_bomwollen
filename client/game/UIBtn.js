@@ -7,16 +7,26 @@ export class Btn{
         this.position = position;
         this.onClick = onClick;
         this.handle_click = (e)=>{
+            console.log('btn clicked')
             e.preventDefault();
             e.stopPropagation();
             // check if click inside button
             if(e.offsetX >= this.position.x * this.global_scale && e.offsetX <= (this.position.x + this.sizes.width) * this.global_scale && e.offsetY >= this.position.y * this.global_scale && e.offsetY <= (this.position.y + this.sizes.height) * this.global_scale){
-                this.onClick();
+                this.debounceClick(this.onClick);
                 console.log('clicked');
             }
         }
 
         document.addEventListener('click', this.handle_click.bind(this));
+        this.debounce_time = new Date().getTime();
+    }
+
+    debounceClick(fn){
+        let now = new Date().getTime();
+        if(now - this.debounce_time > 500){
+            fn();
+            this.debounce_time = now;
+        }
     }
 
     draw(context){

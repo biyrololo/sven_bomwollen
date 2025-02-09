@@ -30,7 +30,7 @@ class MyGameMap extends GameMap{
 
     makeAutoplay(){
         this.socket.send(JSON.stringify({
-            event: 'autoplay'
+            event: 'change_autoplay'
         }))
     }
 
