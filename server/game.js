@@ -155,9 +155,6 @@ export default class Game {
     }
 
     handle_message(data, entity, ws){
-        if(entity.autoplay){
-            return;
-        }
         console.log('received', data, 'from', entity.id);
         const player_id = entity.id;
         if(!('event' in data)){
@@ -165,9 +162,18 @@ export default class Game {
             return;
         }
 
-        if(data.event === 'autoplay'){
-            console.log('making autoplay', entity.id);
-            this.makeAutoplay(entity);
+        if(data.event === 'change_autoplay'){
+            if(entity.autoplay){
+                this.stopAutoplay(entity);
+                console.log('stop autoplay');
+            } else {
+                this.makeAutoplay(entity);
+                console.log('start autoplay');
+            }
+        }
+
+        if(entity.autoplay){
+            return;
         }
 
         if(data.event === 'move_player'){
@@ -351,7 +357,7 @@ export default class Game {
                     error: 'no winner'
                 }
             })
-            console.error('no winner');
+            // console.error('no winner');
             return;
         }
         this.broadcast({
@@ -573,6 +579,10 @@ export default class Game {
 
     makeAutoplay(player){
         player.startAutoplay();
+    }
+
+    stopAutoplay(player){
+        player.stopAutoplay();
     }
 
     json(){

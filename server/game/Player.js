@@ -11,8 +11,15 @@ export default class Player extends Entity{
         this.satisfying_sheep = null;
     }   
 
+    stopAutoplay(){
+        this.autoplay = false;
+        this.move_time = 0;
+        clearTimeout(this.moveTimeout);
+    }
+
     startAutoplay(){
         this.autoplay = true;
+        if(this.moveTimeout) clearTimeout(this.moveTimeout);
         this.start_follow_to_sheep();
     }
 
@@ -73,6 +80,7 @@ export default class Player extends Entity{
     }
 
     satisfy_sheep(sheep){
+        if(!this.autoplay) return;
         if(sheep.current_satisfy_level <= 0){
             this.start_follow_to_sheep();
             return;
