@@ -44,12 +44,17 @@ wss.on('connection', (ws) => {
                 }
             }
             const game = new Game((g) => {
+                g.clear_all();
                 games.delete(g._id);
                 roomlistClients.forEach(c => c.send(JSON.stringify({event: 'deleted_game', payload: {id: g.id}})));
             });
             games.set(game.id, game);
+            // Обработка отключения клиента
             game.startUpdating();
             const player_id = game.addEntity(new Player({x: 0, y: 0}), ws, true);
+            ws.on('close', () => {
+                game.player_leave(player_id);
+            });
             ws.send(JSON.stringify({event: 'connected', payload: {id: game.id, player_id: player_id}}));
             // console.log(game.json());
             ws.send(JSON.stringify({event: 'game_config', payload: game.json()}));
@@ -90,11 +95,6 @@ wss.on('connection', (ws) => {
             ws.send(JSON.stringify({event: 'not_in_game'}));
             return;
         }
-    });
-
-    // Обработка отключения клиента
-    ws.on('close', () => {
-        console.log('Client disconnected');
     });
 });
 

@@ -91,7 +91,7 @@ function get_possible_directions(point_x, point_y){
     return paths;
 }
 
-function get_directions(x, y){
+export function get_directions(x, y){
     if(y % 2 == 0){
         return [
             [0, -1],

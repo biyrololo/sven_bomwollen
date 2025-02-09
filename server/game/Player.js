@@ -1,6 +1,6 @@
 import Entity from "./Entity.js";
 import Directions from "./Directions.js";
-import find_shortest_path, { comparePosition } from "./find_shortest_path.js";
+import find_shortest_path, { comparePosition, get_directions } from "./find_shortest_path.js";
 
 export default class Player extends Entity{
     score = 0;
@@ -71,11 +71,21 @@ export default class Player extends Entity{
                         this.start_follow_to_sheep();
                     }
                 }, this.max_move_time / k * 1000);
+            } else {
+                const dirs = get_directions(this.position.x, this.position.y);;
+                for(let dir of dirs){
+                    let _x = this.position.x + dir[0];
+                    let _y = this.position.y + dir[1];
+                    if(sheep.position.x === _x && sheep.position.y === _y){
+                        this.satisfy_sheep(sheep);
+                        break;
+                    }
+                }
             }
         } else {
             setTimeout(() => {
                 this.start_follow_to_sheep();
-            }, 1000);
+            }, 500);
         }
     }
 

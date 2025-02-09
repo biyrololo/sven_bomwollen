@@ -36,6 +36,39 @@ export default class Game {
         this.fight_time = 1;
     }
 
+    player_leave(player_id){
+        this.players = this.players.filter(p => p.entity.id !== player_id);
+        if(this.players.length === 0){
+            this.stopUpdating();
+            this.delete_game(this);
+        }
+    }
+
+    clear_all(){
+        clearInterval(this.intervalId);
+        clearInterval(this.timeIntervalId);
+        for(let p of this.players){
+            clearTimeout(p.moveTimeout);
+            p.autoplay = false;
+        }
+        for(let s of this.sheeps){
+            clearTimeout(s.satifying_timeout);
+            s.autoplay = false;
+        }
+        this.dog.state = -1;
+        this.oldman.state = -1;
+        clearTimeout(this.dog.moveTimeout);
+        clearTimeout(this.dog.waitTimeout);
+        clearTimeout(this.oldman.moveTimeout);
+        clearTimeout(this.oldman.waitTimeout);
+        this.dog.stop_all();
+        this.oldman.stop_all();
+        this.players = [];
+        this.entites = [];
+        this.sheeps = [];
+        this.tokens = [];
+    }
+
     get_closest_sheep(entity){
         return this.sheeps.sort((a, b) => {
             return a.distance_to2(entity) - b.distance_to2(entity);
@@ -570,8 +603,8 @@ export default class Game {
     }
 
     stopUpdating(){
-        this.dog.stop_all();
-        this.oldman.stop_all();
+        this.dog?.stop_all();
+        this.oldman?.stop_all();
         this.players.splice(this.players.length);
         clearInterval(this.intervalId);
         clearInterval(this.timeIntervalId);
