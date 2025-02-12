@@ -121,6 +121,7 @@ export default class Player extends Entity{
 
     move(direction){
         // this.start_move = performance.now();
+        const k = this.speed_bonus ? 2 : 1;
         const delta = Directions.get_delta(this.position.y);
         const new_x = this.position.x + delta[direction][0];
         const new_y = this.position.y + delta[direction][1];
@@ -160,7 +161,6 @@ export default class Player extends Entity{
             this.position.y = new_y;
         }
         this.move_time = this.max_move_time;
-        const k = this.speed_bonus ? 2 : 1;
         this.move_time /= k;
         this.move_timeout = setTimeout(() => {
             this.move_time = 0;
