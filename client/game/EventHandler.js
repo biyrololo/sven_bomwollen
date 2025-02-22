@@ -156,24 +156,32 @@ class EventHandler {
                 
                 break;
 
-            // case "spawn_token":{
-            //     const pos = this.map.get_posiiton(payload.token.x, payload.token.y);
-            //     const token = generateToken({
-            //         context: this.player.context,
-            //         position: pos
-            //     })
-            //     token._id = payload.token.id;
-            //     this.tokens.push(token);
-            //     this.map.addEntityToCurrentLevel(token);
-            //     break;
-            // }
+            case "update_sheep_mood":{
+                const sheep = this.sheeps.find(s => s._id === payload.id);
+                sheep.mood = payload.mood;
+                sheep.mood_img.src = `/src/images/mood${Number.parseInt(payload.mood)}.png`;
+                break;
+            }
 
-            // case "take_token":{
-            //     const {id} = payload.token;
-            //     this.map.removeEntityFromCurrentLevel(this.tokens.find(t => t._id === id));
-            //     this.tokens = this.tokens.filter(t => t._id !== id);
-            //     break;
-            // }
+            case "spawn_token":{
+                const pos = this.map.get_posiiton(payload.token.x, payload.token.y);
+                const token = generateToken({
+                    context: this.player.context,
+                    position: pos
+                })
+                token._id = payload.token.id;
+                this.tokens.push(token);
+                this.map.addEntityToCurrentLevel(token);
+                break;
+            }
+
+            case "take_token":{
+                const {id} = payload.token;
+                this.map.removeEntityFromCurrentLevel(this.tokens.find(t => t._id === id));
+                console.log(this.tokens);
+                this.tokens = this.tokens.filter(t => t._id !== id);
+                break;
+            }
 
             case "bonus_appear":{
                 const name = payload.name;

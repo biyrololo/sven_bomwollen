@@ -29,8 +29,8 @@ function start(){
     // game_map.chunks_manager.chunk_size = camera.sizes.width;
 
     // const socket = new WebSocket('ws://localhost:8080');
-    const socket = new WebSocket('ws://localhost:8080');
-    const roomListSocket = new WebSocket('ws://localhost:8081');
+    const socket = new WebSocket('ws://45.12.72.183:8080');
+    const roomListSocket = new WebSocket('ws://45.12.72.183:8081');
 
     const Player = generatePlayer({context: ctx}, socket);
     const Man = generateMan({context: ctx});
@@ -67,7 +67,9 @@ function start(){
 
     socket.onmessage = function(data){
         let d = JSON.parse(data.data);
-        console.log(d)
+        if(d.event !== 'time'){
+            console.log(d)
+        }
         if(d.event === 'rooms'){
             if(d.payload.length === 0 || true){
                 socket.send(JSON.stringify({
