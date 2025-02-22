@@ -53,6 +53,7 @@ export default class Game {
         }
         for(let s of this.sheeps){
             clearTimeout(s.satifying_timeout);
+            clearInterval(s.mood_interval);
             s.autoplay = false;
         }
         this.dog.state = -1;
@@ -185,6 +186,7 @@ export default class Game {
                 }
             }
         })
+        sheep.start_mood_update();
     }
 
     handle_message(data, entity, ws){
@@ -422,6 +424,7 @@ export default class Game {
                 }
             }
         })
+        sheep.start_mood_update();
         player.satisfying_sheep = null;
     }
 

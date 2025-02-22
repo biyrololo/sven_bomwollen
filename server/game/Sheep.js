@@ -2,11 +2,12 @@ import Entity from "./Entity.js";
 
 export default class Sheep extends Entity{
     satifying_timeout = null;
+    mood_interval = null;
     constructor(position) {
         super('sheep', position, 0);
         this.satisfy_level = 0;
         this.max_satisfy_level = 5;
-        this.current_satisfy_level = 2;
+        this.current_satisfy_level = 1;
         this.satisty_speed = 0.5;
         this.is_satisfying = false;
         this.angry_level = 0;
@@ -16,7 +17,32 @@ export default class Sheep extends Entity{
         this.satisfying_by = null;
     }
 
+    start(){
+        this.start_mood_update();
+    }
+
+    start_mood_update(){
+        this.mood_interval = setInterval(()=>{
+            if(this.current_satisfy_level < this.max_satisfy_level){
+                this.current_satisfy_level++;
+                if(this.current_satisfy_level > this.max_satisfy_level) this.current_satisfy_level = this.max_satisfy_level;
+                this.game.broadcast({
+                    event: 'update_sheep_mood',
+                    payload: {
+                        id: this.id,
+                        mood: this.current_satisfy_level
+                    }
+                })
+            }
+        }, 5000)
+    }
+
+    stop_mood_update(){
+        clearInterval(this.mood_interval);
+    }
+
     startSatisfying(){
+        this.stop_mood_update();
         this.is_satisfying = true;
         this.satisfy();
     }
@@ -25,6 +51,13 @@ export default class Sheep extends Entity{
         this.satifying_timeout = setTimeout(()=>{
             const k = this.satisfying_by?.speed_bonus ? 2 : 1;
             this.current_satisfy_level-=this.satisty_speed * k;
+            this.game.broadcast({
+                event: 'update_sheep_mood',
+                payload: {
+                    id: this.id,
+                    mood: this.current_satisfy_level
+                }
+            })
             // console.log('satisfy level', this.current_satisfy_level);
             if(this.current_satisfy_level <= 0){
                 this.completeSatisfying();
