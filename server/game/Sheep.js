@@ -34,7 +34,7 @@ export default class Sheep extends Entity{
                     }
                 })
             }
-        }, 5000)
+        }, 20000)
     }
 
     stop_mood_update(){
