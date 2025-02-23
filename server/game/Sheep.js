@@ -6,9 +6,9 @@ export default class Sheep extends Entity{
     constructor(position) {
         super('sheep', position, 0);
         this.satisfy_level = 0;
-        this.max_satisfy_level = 5;
-        this.current_satisfy_level = 1;
-        this.satisty_speed = 0.5;
+        this.max_satisfy_level = 7;
+        this.current_satisfy_level = 2;
+        this.satisty_speed = 1;
         this.is_satisfying = false;
         this.angry_level = 0;
         this.max_angry_level = 5;
