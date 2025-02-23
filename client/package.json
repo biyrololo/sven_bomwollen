@@ -5,6 +5,7 @@
   "scripts": {
     "start": "webpack serve --open",
     "dev": "serve -s .",
+    "prod": "serve -s dist -p 80",
     "build": "webpack"
   },
   "keywords": [],

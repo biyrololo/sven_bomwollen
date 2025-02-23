@@ -159,7 +159,7 @@ class EventHandler {
             case "update_sheep_mood":{
                 const sheep = this.sheeps.find(s => s._id === payload.id);
                 sheep.mood = payload.mood;
-                sheep.mood_img.src = `/src/images/mood${Number.parseInt(payload.mood)}.png`;
+                sheep.mood_img.src = `/src/images/mood${Math.max(Number.parseInt(payload.mood - 1), 0)}.png`;
                 break;
             }
 
